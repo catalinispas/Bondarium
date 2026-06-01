@@ -296,7 +296,59 @@ export const useTableStore = create<TableState>()(
           ),
         })),
 
-      savedFilters: [],
+      savedFilters: [
+        {
+          name: 'Investment Grade',
+          savedAt: '2025-09-01T00:00:00.000Z',
+          tree: { id: 'ig-root', type: 'group', logic: 'OR', children: [
+            { id: 'ig-1',  type: 'condition', field: 'rating', operator: 'in', value: 'AAA,AA+,AA,AA-,A+,A,A-,BBB+,BBB,BBB-' },
+          ]},
+        },
+        {
+          name: 'High Yield',
+          savedAt: '2025-09-01T00:00:00.000Z',
+          tree: { id: 'hy-root', type: 'group', logic: 'OR', children: [
+            { id: 'hy-1', type: 'condition', field: 'rating', operator: 'in', value: 'BB+,BB,BB-,B+,B,B-,CCC,CC,C,D,NR' },
+          ]},
+        },
+        {
+          name: 'Wide Spread (> 300 bp)',
+          savedAt: '2025-09-01T00:00:00.000Z',
+          tree: { id: 'ws-root', type: 'group', logic: 'AND', children: [
+            { id: 'ws-1', type: 'condition', field: 'spread', operator: '>', value: '300' },
+          ]},
+        },
+        {
+          name: 'Discounted Bonds (< 95)',
+          savedAt: '2025-09-01T00:00:00.000Z',
+          tree: { id: 'disc-root', type: 'group', logic: 'AND', children: [
+            { id: 'disc-1', type: 'condition', field: 'price', operator: '<', value: '95' },
+          ]},
+        },
+        {
+          name: 'Short Duration IG',
+          savedAt: '2025-09-01T00:00:00.000Z',
+          tree: { id: 'sdig-root', type: 'group', logic: 'AND', children: [
+            { id: 'sdig-1', type: 'condition', field: 'rating', operator: 'in', value: 'AAA,AA+,AA,AA-,A+,A,A-,BBB+,BBB,BBB-' },
+            { id: 'sdig-2', type: 'condition', field: 'wal',    operator: '<',  value: '5' },
+          ]},
+        },
+        {
+          name: 'Distressed',
+          savedAt: '2025-09-01T00:00:00.000Z',
+          tree: { id: 'dist-root', type: 'group', logic: 'AND', children: [
+            { id: 'dist-1', type: 'condition', field: 'spread', operator: '>',  value: '500' },
+            { id: 'dist-2', type: 'condition', field: 'price',  operator: '<',  value: '80' },
+          ]},
+        },
+        {
+          name: 'EUR Bonds',
+          savedAt: '2025-09-01T00:00:00.000Z',
+          tree: { id: 'eur-root', type: 'group', logic: 'AND', children: [
+            { id: 'eur-1', type: 'condition', field: 'currency', operator: '=', value: 'EUR' },
+          ]},
+        },
+      ],
       saveFilter: (name, tree) => set(s => ({
         savedFilters: [
           ...s.savedFilters.filter(f => f.name !== name),
@@ -308,7 +360,7 @@ export const useTableStore = create<TableState>()(
       })),
     }),
     {
-      name: 'bond-table-state-v5',
+      name: 'bond-table-state-v6',
       partialize: state => ({
         // columnOrder intentionally excluded — always re-derived from COLUMN_DEFS
         columnVisibility: state.columnVisibility,
