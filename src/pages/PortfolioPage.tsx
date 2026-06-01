@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, X } from 'lucide-react';
+import { Trash2, X } from 'lucide-react';
 import { useTableStore } from '../store/tableStore';
 import { useShallow } from 'zustand/react/shallow';
 import { BondTable, useFilteredCount } from '../components/table/BondTable';
@@ -58,11 +58,8 @@ export function PortfolioPage() {
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200 dark:border-gray-700">
           <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">Portfolios</span>
-          <button
-            onClick={() => setCreating(v => !v)}
-            className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={10} /> Add New +
+          <button onClick={() => setCreating(v => !v)} className="btn btn-primary btn-sm">
+            + Add New
           </button>
         </div>
 

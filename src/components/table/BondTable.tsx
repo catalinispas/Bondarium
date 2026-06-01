@@ -455,8 +455,14 @@ export function BondTable() {
 
   const visibleColIds = orderedVisible.map(c => c.id);
 
+  const footerScrollRef = useRef<HTMLDivElement>(null);
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (footerScrollRef.current) footerScrollRef.current.scrollLeft = e.currentTarget.scrollLeft;
+  }, []);
+
   return (
-    <div style={{ height: '100%', overflow: 'auto' }}>
+    <div className="h-full flex flex-col overflow-hidden">
+    <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'auto' }} onScroll={handleScroll}>
       <table
         style={{ width: Math.max(totalTableWidth, 800), tableLayout: 'fixed', minWidth: '100%', borderCollapse: 'separate', borderSpacing: 0 }}
       >
@@ -508,6 +514,10 @@ export function BondTable() {
           })}
         </tbody>
 
+      </table>
+    </div>
+    {filteredData.length > 0 && (
+      <div ref={footerScrollRef} className="flex-shrink-0 overflow-hidden border-t-2 border-slate-300 dark:border-slate-600">
         <SummaryFooter
           bonds={filteredData}
           visibleColIds={visibleColIds}
@@ -515,8 +525,10 @@ export function BondTable() {
           pinLeft={columnPinning.left}
           pinRight={columnPinning.right}
           totalWidth={totalTableWidth}
+          portfolioCols={portfolioCols}
         />
-      </table>
+      </div>
+    )}
     </div>
   );
 }
