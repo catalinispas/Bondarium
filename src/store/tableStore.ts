@@ -130,6 +130,8 @@ interface TableState {
   portfolioViewMode: boolean;
   addPortfolio: (name: string) => void;
   deletePortfolio: (id: string) => void;
+  renamePortfolio: (id: string, name: string) => void;
+  mergePortfolios: (sourceId: string, targetId: string) => void;
   setActivePortfolio: (id: string | null) => void;
   setPortfolioViewMode: (v: boolean) => void;
   addPosition: (portfolioId: string, bondId: string, notional: number, purchasePrice: number, purchaseDate: string, notes?: string) => void;
@@ -236,6 +238,24 @@ export const useTableStore = create<TableState>()(
         activePortfolioId: s.activePortfolioId === id ? null : s.activePortfolioId,
         portfolioViewMode: s.activePortfolioId === id ? false : s.portfolioViewMode,
       })),
+
+      renamePortfolio: (id, name) => set(s => ({
+        portfolios: s.portfolios.map(p => p.id === id ? { ...p, name } : p),
+      })),
+
+      mergePortfolios: (sourceId, targetId) => set(s => {
+        const source = s.portfolios.find(p => p.id === sourceId);
+        if (!source) return {};
+        return {
+          portfolios: s.portfolios
+            .map(p => p.id === targetId
+              ? { ...p, positions: [...p.positions, ...source.positions.map(pos => ({ ...pos, id: crypto.randomUUID() }))] }
+              : p
+            )
+            .filter(p => p.id !== sourceId),
+          activePortfolioId: s.activePortfolioId === sourceId ? targetId : s.activePortfolioId,
+        };
+      }),
 
       setActivePortfolio: id => set({ activePortfolioId: id }),
       setPortfolioViewMode: v => set({ portfolioViewMode: v }),
