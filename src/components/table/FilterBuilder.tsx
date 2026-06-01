@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { X, Plus, GitBranch, Check, Trash2, Save, BookOpen } from 'lucide-react';
+import { X, Plus, GitBranch, Check, Trash2, Save } from 'lucide-react';
 import { useTableStore } from '../../store/tableStore';
 import { useShallow } from 'zustand/react/shallow';
-import type { FilterGroup, FilterCondition, FilterNode, FilterOperator, SavedFilter } from '../../types/bond';
+import type { FilterGroup, FilterCondition, FilterNode, FilterOperator } from '../../types/bond';
 import { COLUMN_DEFS, colId } from '../../data/columns';
 import type { ColumnMeta } from '../../data/columns';
 
@@ -48,7 +48,7 @@ function getColType(fieldId: string): string {
 }
 
 // Produce a readable one-line summary of a filter tree
-function summarizeTree(group: FilterGroup, depth = 0): string {
+export function summarizeTree(group: FilterGroup, depth = 0): string {
   if (group.children.length === 0) return '(empty)';
   const parts = group.children.map(child => {
     if (child.type === 'condition') {
@@ -198,94 +198,23 @@ function GroupNode({
   );
 }
 
-// ── Saved Filters Dialog ────────────────────────────────────────────────────
-
-function SavedFiltersDialog({
-  savedFilters,
-  onApply,
-  onDelete,
-  onClose,
-}: {
-  savedFilters: SavedFilter[];
-  onApply: (tree: FilterGroup) => void;
-  onDelete: (name: string) => void;
-  onClose: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center pt-28"
-      onClick={onClose}>
-      <div
-        className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-lg mx-4 flex flex-col overflow-hidden"
-        style={{ maxHeight: '60vh' }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-          <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100">Saved Filters</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-3">
-          {savedFilters.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center py-8">
-              No saved filters yet.<br />
-              Build a filter and click <strong>Save filter…</strong>
-            </p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {savedFilters.map(sf => (
-                <div
-                  key={sf.name}
-                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800/50"
-                >
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">{sf.name}</span>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => { onApply(sf.tree); onClose(); }}
-                        className="btn btn-sm btn-primary"
-                      >
-                        Apply
-                      </button>
-                      <button
-                        onClick={() => onDelete(sf.name)}
-                        className="text-gray-400 hover:text-red-500 p-0.5"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-mono leading-relaxed break-words">
-                    {summarizeTree(sf.tree)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Main FilterBuilder ──────────────────────────────────────────────────────
 
 const EMPTY_TREE: FilterGroup = { id: 'root', type: 'group', logic: 'AND', children: [] };
 
 interface Props {
   onClose: () => void;
+  embedded?: boolean;
 }
 
-export function FilterBuilder({ onClose }: Props) {
-  const { filterTree, setFilterTree, savedFilters, saveFilter, deleteFilter } = useTableStore(useShallow(s => ({
+export function FilterBuilder({ onClose, embedded = false }: Props) {
+  const { filterTree, setFilterTree, saveFilter } = useTableStore(useShallow(s => ({
     filterTree: s.filterTree,
     setFilterTree: s.setFilterTree,
-    savedFilters: s.savedFilters,
     saveFilter: s.saveFilter,
-    deleteFilter: s.deleteFilter,
   })));
 
   const [pending, setPending] = useState<FilterGroup>(filterTree ?? EMPTY_TREE);
-  const [showDialog, setShowDialog] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveName, setSaveName] = useState('');
 
@@ -307,10 +236,10 @@ export function FilterBuilder({ onClose }: Props) {
     setSaving(false);
   };
 
-  return (
+  const content = (
     <>
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 shadow-md p-3 w-full">
-        {/* Header */}
+      {/* Header — only in standalone mode */}
+      {!embedded && (
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide flex items-center gap-2">
             Filter Formula
@@ -324,71 +253,59 @@ export function FilterBuilder({ onClose }: Props) {
             <X size={14} />
           </button>
         </div>
+      )}
 
-        {/* Tree */}
-        <GroupNode group={pending} depth={0} onUpdate={g => setPending(g)} />
+      {/* Tree */}
+      <GroupNode group={pending} depth={0} onUpdate={g => setPending(g)} />
 
-        {/* Bottom bar */}
-        <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700 flex-wrap">
-          <button onClick={apply} disabled={!hasPending} className="btn btn-primary">
-            <Check size={11} /> Apply
+      {/* Bottom bar */}
+      <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700 flex-wrap">
+        <button onClick={apply} disabled={!hasPending} className="btn btn-primary">
+          <Check size={11} /> Apply
+        </button>
+
+        {isApplied && (
+          <button onClick={remove} className="btn btn-danger">
+            <Trash2 size={11} /> Remove
           </button>
+        )}
 
-          {isApplied && (
-            <button onClick={remove} className="btn btn-danger">
-              <Trash2 size={11} /> Remove
+        <div className="ml-auto flex items-center gap-2">
+          {!saving ? (
+            <button onClick={() => setSaving(true)} disabled={!hasPending} className="btn btn-secondary">
+              <Save size={11} /> Save filter…
             </button>
-          )}
-
-          <div className="ml-auto flex items-center gap-2">
-            <button onClick={() => setShowDialog(true)} className="btn btn-secondary">
-              <BookOpen size={11} />
-              Saved Filters
-              {savedFilters.length > 0 && (
-                <span className="ml-0.5 px-1 rounded-full bg-gray-200 dark:bg-gray-700 text-[9px] font-semibold">
-                  {savedFilters.length}
-                </span>
-              )}
-            </button>
-
-            {!saving ? (
-              <button onClick={() => setSaving(true)} disabled={!hasPending} className="btn btn-secondary">
-                <Save size={11} /> Save filter…
+          ) : (
+            <div className="flex items-center gap-1">
+              <input
+                autoFocus
+                className="input-sm w-32"
+                placeholder="Filter name…"
+                value={saveName}
+                onChange={e => setSaveName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') commitSave();
+                  if (e.key === 'Escape') { setSaving(false); setSaveName(''); }
+                }}
+              />
+              <button onClick={commitSave} disabled={!saveName.trim()} className="btn btn-primary btn-sm">
+                <Check size={10} /> Save
               </button>
-            ) : (
-              <div className="flex items-center gap-1">
-                <input
-                  autoFocus
-                  className="input-sm w-32"
-                  placeholder="Filter name…"
-                  value={saveName}
-                  onChange={e => setSaveName(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') commitSave();
-                    if (e.key === 'Escape') { setSaving(false); setSaveName(''); }
-                  }}
-                />
-                <button onClick={commitSave} disabled={!saveName.trim()} className="btn btn-primary btn-sm">
-                  <Check size={10} /> Save
-                </button>
-                <button onClick={() => { setSaving(false); setSaveName(''); }} className="text-gray-400 hover:text-gray-600">
-                  <X size={12} />
-                </button>
-              </div>
-            )}
-          </div>
+              <button onClick={() => { setSaving(false); setSaveName(''); }} className="text-gray-400 hover:text-gray-600">
+                <X size={12} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Saved Filters Dialog */}
-      {showDialog && (
-        <SavedFiltersDialog
-          savedFilters={savedFilters}
-          onApply={tree => { setPending(tree); setFilterTree(tree); }}
-          onDelete={deleteFilter}
-          onClose={() => setShowDialog(false)}
-        />
-      )}
     </>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 shadow-md p-3 w-full">
+      {content}
+    </div>
   );
 }

@@ -195,6 +195,7 @@ export function BondTable() {
         { id: 'pf-mktvalue',   label: 'Mkt Value',   width: 88 },
         { id: 'pf-pnl-dollar', label: 'P&L ($)',     width: 90 },
         { id: 'pf-pnl-pct',   label: 'P&L (%)',     width: 76 },
+        { id: 'pf-notes',      label: 'Notes',       width: 150 },
       ]
     : [];
 
@@ -387,6 +388,12 @@ export function BondTable() {
             return <td key={col.id} style={{ width: col.width, minWidth: col.width, maxWidth: col.width }}
               className={`${baseTd} font-medium ${pct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
               {pct >= 0 ? '+' : ''}{pct.toFixed(2)}%
+            </td>;
+          }
+          if (col.id === 'pf-notes') {
+            return <td key={col.id} style={{ width: col.width, minWidth: col.width, maxWidth: col.width }}
+              className={`${py} px-2 text-xs text-left border-r border-gray-100 dark:border-gray-800 truncate text-gray-500 dark:text-gray-400 italic`}>
+              {pos?.notes ?? ''}
             </td>;
           }
           return <td key={col.id} style={{ width: col.width, minWidth: col.width, maxWidth: col.width }} className={baseTd}>—</td>;

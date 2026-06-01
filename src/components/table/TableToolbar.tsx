@@ -7,9 +7,8 @@ import {
 import { useTableStore } from '../../store/tableStore';
 import { useShallow } from 'zustand/react/shallow';
 import { LiveBadge } from './LiveBadge';
-import { QuickFilterChips } from './QuickFilterChips';
 import { ColumnManager } from './ColumnManager';
-import { FilterBuilder } from './FilterBuilder';
+import { FilterPanel } from './FilterPanel';
 import { ConditionalFormat } from './ConditionalFormat';
 import { UploadModal } from '../upload/UploadModal';
 import { CompareModal } from './CompareModal';
@@ -197,15 +196,10 @@ export function TableToolbar() {
         </div>
       </div>
 
-      {/* Quick filter chips */}
-      <div className="px-3 pb-2">
-        <QuickFilterChips />
-      </div>
-
       {/* Inline panels */}
       {panel === 'filter' && (
         <div className="px-3 pb-2">
-          <FilterBuilder onClose={() => setPanel(null)} />
+          <FilterPanel onClose={() => setPanel(null)} />
         </div>
       )}
       {panel === 'format' && (

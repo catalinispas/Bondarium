@@ -27,6 +27,7 @@ type Tab = 'offerings' | 'portfolio';
 function Inner() {
   const darkMode = useTableStore(s => s.darkMode);
   const setPortfolioViewMode = useTableStore(s => s.setPortfolioViewMode);
+  const clearSelected = useTableStore(s => s.clearSelected);
   const [showDesignSystem, setShowDesignSystem] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('offerings');
   useLiveData();
@@ -39,6 +40,7 @@ function Inner() {
 
   const switchTab = (tab: Tab) => {
     if (tab === 'offerings') setPortfolioViewMode(false);
+    clearSelected();
     setActiveTab(tab);
   };
 
