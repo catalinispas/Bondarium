@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Cell flash animations */
+@keyframes flash-green {
+  0% { background-color: rgba(34, 197, 94, 0.4); }
+  100% { background-color: transparent; }
+}
+@keyframes flash-red {
+  0% { background-color: rgba(239, 68, 68, 0.4); }
+  100% { background-color: transparent; }
+}
+
+.flash-up {
+  animation: flash-green 0.8s ease-out forwards;
+}
+.flash-down {
+  animation: flash-red 0.8s ease-out forwards;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+/* Resize handle */
+.resizer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+}
+.resizer:hover, .resizer.isResizing {
+  background: #3b82f6;
+}
+
+/* Utility component classes */
+.select-sm {
+  @apply text-xs border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 bg-white dark:bg-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500;
+}
+.input-sm {
+  @apply text-xs border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 bg-white dark:bg-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500;
+}
+
+/* Button system */
+.btn {
+  @apply inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed;
+}
+.btn-sm {
+  @apply px-2 py-0.5;
+}
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
+}
+.btn-secondary {
+  @apply border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800;
+}
+.btn-danger {
+  @apply border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950;
+}
+.btn-ghost {
+  @apply text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800;
+}
+.btn-page {
+  @apply p-1 rounded text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed;
+}
+
+/* Pinned column separator — single pseudo-element on the sticky header spans the full table height */
+thead .pin-left-last {
+  overflow: visible;
+}
+thead .pin-left-last::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: 8px;
+  height: 9999px;
+  background: linear-gradient(to right, rgba(0,0,0,0.09), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+.dark thead .pin-left-last::after {
+  background: linear-gradient(to right, rgba(0,0,0,0.32), transparent);
+}
