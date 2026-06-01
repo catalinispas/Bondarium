@@ -2,6 +2,51 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Bond, FilterGroup, ConditionalRule, SavedFilter, Density } from '../types/bond';
 import type { Portfolio, PortfolioPosition } from '../types/portfolio';
+
+const DEFAULT_PORTFOLIOS: Portfolio[] = [
+  {
+    id: 'default-portfolio-1',
+    name: 'Core Fixed Income',
+    createdAt: '2025-09-15T09:00:00.000Z',
+    positions: [
+      { id: 'pos-1-1', bondId: '1',  notional: 2_000_000, purchasePrice: 97.500, purchaseDate: '2025-09-15', notes: 'Agency CMO anchor' },
+      { id: 'pos-1-2', bondId: '5',  notional: 1_500_000, purchasePrice: 99.250, purchaseDate: '2025-10-01' },
+      { id: 'pos-1-3', bondId: '10', notional: 3_000_000, purchasePrice: 101.125, purchaseDate: '2025-10-15' },
+      { id: 'pos-1-4', bondId: '15', notional: 2_500_000, purchasePrice: 98.750, purchaseDate: '2025-11-01' },
+      { id: 'pos-1-5', bondId: '20', notional: 1_000_000, purchasePrice: 103.500, purchaseDate: '2025-11-20' },
+      { id: 'pos-1-6', bondId: '25', notional: 2_000_000, purchasePrice: 96.000, purchaseDate: '2025-12-05' },
+      { id: 'pos-1-7', bondId: '30', notional: 1_750_000, purchasePrice: 99.875, purchaseDate: '2026-01-10' },
+      { id: 'pos-1-8', bondId: '35', notional: 1_250_000, purchasePrice: 97.250, purchaseDate: '2026-02-14' },
+    ],
+  },
+  {
+    id: 'default-portfolio-2',
+    name: 'High Yield Focus',
+    createdAt: '2025-10-20T10:30:00.000Z',
+    positions: [
+      { id: 'pos-2-1', bondId: '2',  notional: 500_000,   purchasePrice: 78.500, purchaseDate: '2025-10-20', notes: 'Distressed' },
+      { id: 'pos-2-2', bondId: '7',  notional: 750_000,   purchasePrice: 85.250, purchaseDate: '2025-11-05' },
+      { id: 'pos-2-3', bondId: '12', notional: 1_000_000, purchasePrice: 92.000, purchaseDate: '2025-11-25' },
+      { id: 'pos-2-4', bondId: '18', notional: 600_000,   purchasePrice: 80.750, purchaseDate: '2025-12-10' },
+      { id: 'pos-2-5', bondId: '23', notional: 800_000,   purchasePrice: 88.500, purchaseDate: '2026-01-08' },
+      { id: 'pos-2-6', bondId: '28', notional: 1_200_000, purchasePrice: 95.125, purchaseDate: '2026-02-20' },
+    ],
+  },
+  {
+    id: 'default-portfolio-3',
+    name: 'Short Duration ABS',
+    createdAt: '2026-01-05T08:00:00.000Z',
+    positions: [
+      { id: 'pos-3-1', bondId: '3',  notional: 5_000_000, purchasePrice: 99.500,  purchaseDate: '2026-01-05' },
+      { id: 'pos-3-2', bondId: '8',  notional: 3_000_000, purchasePrice: 100.125, purchaseDate: '2026-01-12' },
+      { id: 'pos-3-3', bondId: '13', notional: 2_500_000, purchasePrice: 98.875,  purchaseDate: '2026-01-20' },
+      { id: 'pos-3-4', bondId: '19', notional: 4_000_000, purchasePrice: 101.250, purchaseDate: '2026-02-01' },
+      { id: 'pos-3-5', bondId: '24', notional: 2_000_000, purchasePrice: 99.000,  purchaseDate: '2026-02-15' },
+      { id: 'pos-3-6', bondId: '29', notional: 3_500_000, purchasePrice: 100.750, purchaseDate: '2026-03-01' },
+      { id: 'pos-3-7', bondId: '34', notional: 1_500_000, purchasePrice: 98.500,  purchaseDate: '2026-03-20' },
+    ],
+  },
+];
 import { MOCK_DATA } from '../data/mockData';
 import { DEFAULT_VISIBLE, DEFAULT_WIDTHS, COLUMN_DEFS, colId } from '../data/columns';
 
@@ -173,7 +218,7 @@ export const useTableStore = create<TableState>()(
       ],
       setConditionalRules: conditionalRules => set({ conditionalRules }),
 
-      portfolios: [],
+      portfolios: DEFAULT_PORTFOLIOS,
       activePortfolioId: null,
       portfolioViewMode: false,
 
@@ -243,7 +288,7 @@ export const useTableStore = create<TableState>()(
       })),
     }),
     {
-      name: 'bond-table-state-v4',
+      name: 'bond-table-state-v5',
       partialize: state => ({
         // columnOrder intentionally excluded — always re-derived from COLUMN_DEFS
         columnVisibility: state.columnVisibility,

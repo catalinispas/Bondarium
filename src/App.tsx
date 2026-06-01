@@ -3,6 +3,7 @@ import { BondTable, useFilteredCount } from './components/table/BondTable';
 import { TableToolbar } from './components/table/TableToolbar';
 import { PaginationBar } from './components/table/PaginationBar';
 import { DesignSystem } from './pages/DesignSystem';
+import { PortfolioPage } from './pages/PortfolioPage';
 import { useTableStore } from './store/tableStore';
 import { useLiveData } from './hooks/useLiveData';
 
@@ -21,9 +22,13 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: string |
   }
 }
 
+type Tab = 'offerings' | 'portfolio';
+
 function Inner() {
   const darkMode = useTableStore(s => s.darkMode);
+  const setPortfolioViewMode = useTableStore(s => s.setPortfolioViewMode);
   const [showDesignSystem, setShowDesignSystem] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>('offerings');
   useLiveData();
 
   useEffect(() => {
@@ -32,9 +37,15 @@ function Inner() {
 
   const filteredCount = useFilteredCount();
 
+  const switchTab = (tab: Tab) => {
+    if (tab === 'offerings') setPortfolioViewMode(false);
+    setActiveTab(tab);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-gray-950 overflow-hidden">
-      <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-900 dark:bg-slate-950 border-b border-slate-700 flex-shrink-0">
+      {/* Top header bar */}
+      <div className="flex items-center gap-3 px-4 py-2 bg-slate-900 dark:bg-slate-950 border-b border-slate-700 flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
             <span className="text-white text-xs font-bold">B</span>
@@ -42,12 +53,37 @@ function Inner() {
           <h1 className="text-sm font-semibold text-white">Bond Desk</h1>
         </div>
         <span className="text-slate-400 text-xs">Structured Finance Analytics</span>
+
+        {/* Tab navigation */}
+        <div className="flex items-center gap-0.5 ml-4 bg-slate-800 rounded-lg p-0.5">
+          <button
+            onClick={() => switchTab('offerings')}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors
+              ${activeTab === 'offerings'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+              }`}
+          >
+            Offerings
+          </button>
+          <button
+            onClick={() => switchTab('portfolio')}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors
+              ${activeTab === 'portfolio'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+              }`}
+          >
+            Portfolio
+          </button>
+        </div>
+
         <div className="ml-auto">
           <button
             onClick={() => setShowDesignSystem(v => !v)}
             className="text-xs text-slate-400 hover:text-slate-200 px-2 py-1 rounded hover:bg-slate-800 transition-colors"
           >
-            {showDesignSystem ? '← Back to table' : 'Design System'}
+            {showDesignSystem ? '← Back' : 'Design System'}
           </button>
         </div>
       </div>
@@ -55,6 +91,10 @@ function Inner() {
       {showDesignSystem ? (
         <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'auto' }}>
           <DesignSystem />
+        </div>
+      ) : activeTab === 'portfolio' ? (
+        <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
+          <PortfolioPage />
         </div>
       ) : (
         <>

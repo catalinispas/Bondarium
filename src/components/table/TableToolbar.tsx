@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import {
   Search, Columns, Filter, Palette, Download,
   Upload, Sun, Moon, AlignJustify, Group, GitCompare, X,
-  Briefcase, PlusCircle,
+  PlusCircle,
 } from 'lucide-react';
 import { useTableStore } from '../../store/tableStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -13,7 +13,6 @@ import { FilterBuilder } from './FilterBuilder';
 import { ConditionalFormat } from './ConditionalFormat';
 import { UploadModal } from '../upload/UploadModal';
 import { CompareModal } from './CompareModal';
-import { PortfolioDrawer } from '../portfolio/PortfolioDrawer';
 import { AddToPortfolioModal } from '../portfolio/AddToPortfolioModal';
 import { exportCSV, exportExcel, exportPDF } from '../../utils/export';
 import { COLUMN_DEFS, colId } from '../../data/columns';
@@ -21,7 +20,7 @@ import type { ColumnMeta } from '../../data/columns';
 import type { Density } from '../../types/bond';
 import { useFilteredCount } from './BondTable';
 
-type Panel = 'columns' | 'filter' | 'format' | 'export' | 'density' | 'group' | 'portfolio' | null;
+type Panel = 'columns' | 'filter' | 'format' | 'export' | 'density' | 'group' | null;
 
 const DENSITY_LABELS: Record<Density, string> = {
   compact: 'Compact',
@@ -48,7 +47,6 @@ export function TableToolbar() {
     filterTree, activePresets,
     data, columnVisibility,
     selected, clearSelected,
-    portfolioViewMode,
   } = useTableStore(useShallow(s => ({
     globalSearch: s.globalSearch,
     setGlobalSearch: s.setGlobalSearch,
@@ -64,7 +62,6 @@ export function TableToolbar() {
     columnVisibility: s.columnVisibility,
     selected: s.selected,
     clearSelected: s.clearSelected,
-    portfolioViewMode: s.portfolioViewMode,
   })));
 
   const filteredCount = useFilteredCount();
@@ -115,7 +112,6 @@ export function TableToolbar() {
         <ToolBtn icon={<Columns size={14} />} label="Columns" active={panel === 'columns'} onClick={() => togglePanel('columns')} />
         <ToolBtn icon={<Filter size={14} />} label="Filter" active={panel === 'filter'} hasIndicator={hasFilter} onClick={() => togglePanel('filter')} />
         <ToolBtn icon={<Palette size={14} />} label="Format" active={panel === 'format'} onClick={() => togglePanel('format')} />
-        <ToolBtn icon={<Briefcase size={14} />} label="Portfolio" active={panel === 'portfolio'} hasIndicator={portfolioViewMode} onClick={() => togglePanel('portfolio')} />
 
         <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
 
@@ -220,7 +216,6 @@ export function TableToolbar() {
 
       {/* Overlays */}
       {panel === 'columns' && <ColumnManager onClose={() => setPanel(null)} />}
-      {panel === 'portfolio' && <PortfolioDrawer onClose={() => setPanel(null)} />}
       {showUpload && <UploadModal onClose={() => setShowUpload(false)} />}
       {showCompare && <CompareModal onClose={() => setShowCompare(false)} />}
       {showAddToPortfolio && (
