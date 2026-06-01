@@ -1,6 +1,8 @@
-import { X } from 'lucide-react';
+import { useState } from 'react';
+import { X, PlusCircle } from 'lucide-react';
 import { LineChart, Line, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import type { Bond } from '../../types/bond';
+import { AddToPortfolioModal } from '../portfolio/AddToPortfolioModal';
 
 function generateSparkData(bond: Bond) {
   const points = [];
@@ -65,6 +67,7 @@ interface Props {
 }
 
 export function RowDetail({ bond, onClose }: Props) {
+  const [showAddModal, setShowAddModal] = useState(false);
   const sparkData = generateSparkData(bond);
 
   const pColor = typeof bond.priceChange1d === 'number'
@@ -86,9 +89,20 @@ export function RowDetail({ bond, onClose }: Props) {
           <span className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{bond.description}</span>
           <span className="text-[10px] text-gray-400 whitespace-nowrap">{bond.cusip} · {bond.isin} · {bond.bondType}</span>
         </div>
-        <button onClick={onClose} className="ml-3 text-gray-400 hover:text-gray-600 flex-shrink-0">
-          <X size={13} />
-        </button>
+        <div className="ml-3 flex items-center gap-1.5 flex-shrink-0">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 border border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:border-emerald-700 dark:text-emerald-400"
+          >
+            <PlusCircle size={10} /> Add to Portfolio
+          </button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X size={13} />
+          </button>
+        </div>
+        {showAddModal && (
+          <AddToPortfolioModal bondIds={[bond.id]} onClose={() => setShowAddModal(false)} />
+        )}
       </div>
 
       {/* Stats + sparklines */}

@@ -413,6 +413,95 @@ export function DesignSystem() {
           </div>
         </Section>
 
+        {/* ── Portfolio ── */}
+        <Section title="Portfolio Feature">
+          <Row label="Add to Portfolio button (toolbar/row detail) — emerald, same pattern as Compare (amber)">
+            <button className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-emerald-50 border border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:border-emerald-700 dark:text-emerald-400">
+              Add to Portfolio (3)
+            </button>
+            <button className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 border border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:border-emerald-700 dark:text-emerald-400">
+              Add to Portfolio
+            </button>
+          </Row>
+          <Row label="Portfolio view toggle — pill switch (same as any boolean toggle)">
+            <div className="flex items-center gap-3">
+              <button className="relative inline-flex h-5 w-9 items-center rounded-full bg-blue-600 transition-colors">
+                <span className="inline-block h-3.5 w-3.5 transform translate-x-4 rounded-full bg-white shadow" />
+              </button>
+              <span className="text-xs text-gray-500">ON</span>
+              <button className="relative inline-flex h-5 w-9 items-center rounded-full bg-gray-300 dark:bg-gray-600 transition-colors">
+                <span className="inline-block h-3.5 w-3.5 transform translate-x-0.5 rounded-full bg-white shadow" />
+              </button>
+              <span className="text-xs text-gray-500">OFF</span>
+            </div>
+          </Row>
+          <Row label="Portfolio column headers — bg-emerald-50 (tinted, not default bg-gray-50)">
+            <div className="flex border border-gray-200 dark:border-gray-700 rounded overflow-hidden text-xs">
+              <div className="px-2 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 font-semibold border-r border-gray-200 dark:border-gray-700 text-right w-20">Notional</div>
+              <div className="px-2 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 font-semibold border-r border-gray-200 dark:border-gray-700 text-right w-20">Book Price</div>
+              <div className="px-2 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 font-semibold text-right w-20">P&amp;L ($)</div>
+            </div>
+          </Row>
+          <Row label="Position row in Portfolio Drawer — reuses bg-gray-50 list item pattern">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded p-2 w-72">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono font-semibold text-gray-700 dark:text-gray-300">310001176</span>
+                <button className="text-gray-400 hover:text-red-500 p-0.5 opacity-0 group-hover:opacity-100"><Trash2 size={11} /></button>
+              </div>
+              <span className="text-[10px] text-gray-500 block leading-tight">Fannie CMO 2029 TAC A 0.40%</span>
+              <div className="flex flex-wrap gap-x-3 mt-1 text-[10px] text-gray-600 dark:text-gray-400">
+                <span>Notional: $1.00M</span>
+                <span>Book: 97.500</span>
+                <span>Mkt: 97.152</span>
+                <span className="text-red-500">P&amp;L: -$3.5K (-0.36%)</span>
+              </div>
+            </div>
+          </Row>
+          <Row label="Portfolio summary strip — grid-cols-2, text-[9px] label + text-[11px] value">
+            <div className="border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-800/50 px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2 w-72">
+              {[
+                { label: 'Total Mkt Value', val: '$2.43M', color: '' },
+                { label: 'Total P&L', val: '-$12.5K', color: 'text-red-500' },
+                { label: 'WA Spread', val: '185.3 bp', color: '' },
+                { label: 'WA OAS Dur', val: '4.21 yr', color: '' },
+                { label: 'Total DV01', val: '$1,024', color: '' },
+                { label: 'P&L %', val: '-0.51%', color: 'text-red-500' },
+              ].map(({ label, val, color }) => (
+                <div key={label}>
+                  <div className="text-[9px] text-gray-400 uppercase tracking-wide">{label}</div>
+                  <div className={`text-[11px] font-semibold ${color || 'text-gray-700 dark:text-gray-300'}`}>{val}</div>
+                </div>
+              ))}
+            </div>
+          </Row>
+          <Row label="Scenario P&L row — input-sm + colored result">
+            <div className="flex items-center gap-2 border-t border-gray-200 dark:border-gray-700 pt-2">
+              <span className="text-[10px] text-gray-500 whitespace-nowrap">Spread shock</span>
+              <input type="number" className="input-sm w-16 text-center" defaultValue={50} />
+              <span className="text-[10px] text-gray-500">bp →</span>
+              <span className="text-[11px] font-semibold text-red-500">-$51.2K</span>
+            </div>
+          </Row>
+          <Row label="Allocation bar — stacked horizontal, color-coded per bond type">
+            <div className="w-72 space-y-2">
+              <div className="h-2 w-full rounded overflow-hidden flex">
+                {[['#3b82f6',40],['#10b981',25],['#f59e0b',20],['#ef4444',15]].map(([c,w],i) => (
+                  <div key={i} style={{width:`${w}%`, backgroundColor: c as string}} />
+                ))}
+              </div>
+              <div className="space-y-1">
+                {[['#3b82f6','Agency CMO','40%'],['#10b981','CMBS','25%'],['#f59e0b','ABS','20%'],['#ef4444','CDO/CLO','15%']].map(([c,l,p]) => (
+                  <div key={l} className="flex items-center gap-1.5 text-[10px] text-gray-600 dark:text-gray-400">
+                    <div className="w-2 h-2 rounded-sm flex-shrink-0" style={{backgroundColor: c as string}} />
+                    <span className="flex-1">{l}</span>
+                    <span className="font-mono">{p}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Row>
+        </Section>
+
         {/* ── Toolbar container ── */}
         <Section title="Containers">
           <div className="space-y-1 text-[10px] text-gray-400 font-mono">

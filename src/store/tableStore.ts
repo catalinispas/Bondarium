@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Bond, FilterGroup, ConditionalRule, SavedFilter, Density } from '../types/bond';
+import type { Portfolio, PortfolioPosition } from '../types/portfolio';
 import { MOCK_DATA } from '../data/mockData';
 import { DEFAULT_VISIBLE, DEFAULT_WIDTHS, COLUMN_DEFS, colId } from '../data/columns';
 
@@ -77,6 +78,18 @@ interface TableState {
   savedFilters: SavedFilter[];
   saveFilter: (name: string, tree: FilterGroup) => void;
   deleteFilter: (name: string) => void;
+
+  // Portfolio
+  portfolios: Portfolio[];
+  activePortfolioId: string | null;
+  portfolioViewMode: boolean;
+  addPortfolio: (name: string) => void;
+  deletePortfolio: (id: string) => void;
+  setActivePortfolio: (id: string | null) => void;
+  setPortfolioViewMode: (v: boolean) => void;
+  addPosition: (portfolioId: string, bondId: string, notional: number, purchasePrice: number, purchaseDate: string, notes?: string) => void;
+  removePosition: (portfolioId: string, positionId: string) => void;
+  updatePosition: (portfolioId: string, positionId: string, updates: Partial<Omit<PortfolioPosition, 'id' | 'bondId'>>) => void;
 }
 
 export const useTableStore = create<TableState>()(
@@ -160,6 +173,64 @@ export const useTableStore = create<TableState>()(
       ],
       setConditionalRules: conditionalRules => set({ conditionalRules }),
 
+      portfolios: [],
+      activePortfolioId: null,
+      portfolioViewMode: false,
+
+      addPortfolio: name => set(s => ({
+        portfolios: [...s.portfolios, {
+          id: crypto.randomUUID(),
+          name,
+          createdAt: new Date().toISOString(),
+          positions: [],
+        }],
+      })),
+
+      deletePortfolio: id => set(s => ({
+        portfolios: s.portfolios.filter(p => p.id !== id),
+        activePortfolioId: s.activePortfolioId === id ? null : s.activePortfolioId,
+        portfolioViewMode: s.activePortfolioId === id ? false : s.portfolioViewMode,
+      })),
+
+      setActivePortfolio: id => set({ activePortfolioId: id }),
+      setPortfolioViewMode: v => set({ portfolioViewMode: v }),
+
+      addPosition: (portfolioId, bondId, notional, purchasePrice, purchaseDate, notes) =>
+        set(s => ({
+          portfolios: s.portfolios.map(p =>
+            p.id !== portfolioId ? p : {
+              ...p,
+              positions: [...p.positions, {
+                id: crypto.randomUUID(),
+                bondId, notional, purchasePrice, purchaseDate,
+                ...(notes ? { notes } : {}),
+              }],
+            }
+          ),
+        })),
+
+      removePosition: (portfolioId, positionId) =>
+        set(s => ({
+          portfolios: s.portfolios.map(p =>
+            p.id !== portfolioId ? p : {
+              ...p,
+              positions: p.positions.filter(pos => pos.id !== positionId),
+            }
+          ),
+        })),
+
+      updatePosition: (portfolioId, positionId, updates) =>
+        set(s => ({
+          portfolios: s.portfolios.map(p =>
+            p.id !== portfolioId ? p : {
+              ...p,
+              positions: p.positions.map(pos =>
+                pos.id !== positionId ? pos : { ...pos, ...updates }
+              ),
+            }
+          ),
+        })),
+
       savedFilters: [],
       saveFilter: (name, tree) => set(s => ({
         savedFilters: [
@@ -182,6 +253,9 @@ export const useTableStore = create<TableState>()(
         density: state.density,
         darkMode: state.darkMode,
         savedFilters: state.savedFilters,
+        portfolios: state.portfolios,
+        activePortfolioId: state.activePortfolioId,
+        // portfolioViewMode intentionally not persisted
         conditionalRules: state.conditionalRules,
         groupBy: state.groupBy,
         pageSize: state.pageSize,
