@@ -9,7 +9,7 @@ const EMPTY_TREE: FilterGroup = { id: 'root', type: 'group', logic: 'AND', child
 const UID = () => Math.random().toString(36).slice(2, 9);
 const freshTree = (): FilterGroup => ({ id: UID(), type: 'group', logic: 'AND', children: [] });
 
-export function FiltersPage() {
+export function FiltersPage({ onNavigateToOfferings }: { onNavigateToOfferings?: () => void }) {
   const { savedFilters, saveFilter, deleteFilter, setFilterTree, filterTree } = useTableStore(useShallow(s => ({
     savedFilters: s.savedFilters,
     saveFilter: s.saveFilter,
@@ -68,7 +68,10 @@ export function FiltersPage() {
   };
 
   const handleApply = () => {
-    if (editorTree.children.length > 0) setFilterTree(editorTree);
+    if (editorTree.children.length > 0) {
+      setFilterTree(editorTree);
+      onNavigateToOfferings?.();
+    }
   };
 
   const handleClearApplied = () => setFilterTree(null);

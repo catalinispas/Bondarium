@@ -1,4 +1,5 @@
 import { useEffect, useState, Component, type ReactNode } from 'react';
+import { X } from 'lucide-react';
 import { BondTable, useFilteredCount } from './components/table/BondTable';
 import { TableToolbar } from './components/table/TableToolbar';
 import { PaginationBar } from './components/table/PaginationBar';
@@ -7,6 +8,7 @@ import { PortfolioPage } from './pages/PortfolioPage';
 import { FiltersPage } from './pages/FiltersPage';
 import { useTableStore } from './store/tableStore';
 import { useLiveData } from './hooks/useLiveData';
+import { summarizeTree } from './components/table/FilterBuilder';
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
   state = { error: null };
@@ -24,6 +26,25 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: string |
 }
 
 type Tab = 'offerings' | 'portfolio' | 'filters';
+
+function ActiveFilterBar() {
+  const filterTree = useTableStore(s => s.filterTree);
+  const setFilterTree = useTableStore(s => s.setFilterTree);
+  if (!filterTree || filterTree.children.length === 0) return null;
+  return (
+    <div className="flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800 flex-shrink-0">
+      <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 flex-shrink-0">Filter:</span>
+      <span className="text-xs text-blue-600 dark:text-blue-400 flex-1 truncate font-mono">{summarizeTree(filterTree)}</span>
+      <button
+        onClick={() => setFilterTree(null)}
+        title="Remove filter"
+        className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 flex-shrink-0 ml-1"
+      >
+        <X size={13} />
+      </button>
+    </div>
+  );
+}
 
 function Inner() {
   const darkMode = useTableStore(s => s.darkMode);
@@ -111,11 +132,12 @@ function Inner() {
         </div>
       ) : activeTab === 'filters' ? (
         <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
-          <FiltersPage />
+          <FiltersPage onNavigateToOfferings={() => switchTab('offerings')} />
         </div>
       ) : (
         <>
           <TableToolbar />
+          <ActiveFilterBar />
           <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
             <BondTable />
           </div>
