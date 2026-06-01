@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import {
   Search, Columns, Filter, Palette, Download,
   Upload, Sun, Moon, AlignJustify, Group, GitCompare, X,
-  PlusCircle,
+  PlusCircle, SlidersHorizontal,
 } from 'lucide-react';
 import { useTableStore } from '../../store/tableStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -19,7 +19,7 @@ import type { ColumnMeta } from '../../data/columns';
 import type { Density } from '../../types/bond';
 import { useFilteredCount } from './BondTable';
 
-type Panel = 'columns' | 'filter' | 'format' | 'export' | 'density' | 'group' | null;
+type Panel = 'columns' | 'filter' | 'format' | 'export' | 'settings' | null;
 
 const DENSITY_LABELS: Record<Density, string> = {
   compact: 'Compact',
@@ -108,37 +108,55 @@ export function TableToolbar() {
         <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
 
         {/* Toolbar buttons */}
-        <ToolBtn icon={<Columns size={14} />} label="Columns" active={panel === 'columns'} onClick={() => togglePanel('columns')} />
+        <div className="relative">
+          <ToolBtn icon={<SlidersHorizontal size={14} />} label="Table Settings" active={panel === 'settings'} onClick={() => togglePanel('settings')} />
+          {panel === 'settings' && (
+            <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30 w-52 py-1">
+              <button
+                className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                onClick={() => setPanel('columns')}
+              >
+                <Columns size={13} className="text-gray-400 flex-shrink-0" />
+                <span>Columns</span>
+                <span className="ml-auto text-gray-400 text-[10px]">→</span>
+              </button>
+              <button
+                className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                onClick={() => setPanel('format')}
+              >
+                <Palette size={13} className="text-gray-400 flex-shrink-0" />
+                <span>Conditional Format</span>
+                <span className="ml-auto text-gray-400 text-[10px]">→</span>
+              </button>
+              <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+              <div className="flex items-center gap-2 px-3 py-1.5">
+                <Group size={13} className="text-gray-400 flex-shrink-0" />
+                <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">Group</span>
+                <select
+                  value={groupBy ?? ''}
+                  onChange={e => setGroupBy(e.target.value || null)}
+                  className="select-sm flex-1 min-w-0"
+                >
+                  {GROUP_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5">
+                <AlignJustify size={13} className="text-gray-400 flex-shrink-0" />
+                <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">Spacing</span>
+                <select
+                  value={density}
+                  onChange={e => setDensity(e.target.value as Density)}
+                  className="select-sm flex-1 min-w-0"
+                >
+                  {(Object.keys(DENSITY_LABELS) as Density[]).map(d => (
+                    <option key={d} value={d}>{DENSITY_LABELS[d]}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
         <ToolBtn icon={<Filter size={14} />} label="Filter" active={panel === 'filter'} hasIndicator={hasFilter} onClick={() => togglePanel('filter')} />
-        <ToolBtn icon={<Palette size={14} />} label="Format" active={panel === 'format'} onClick={() => togglePanel('format')} />
-
-        <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
-
-        {/* Group by */}
-        <div className="flex items-center gap-1">
-          <Group size={13} className="text-gray-400" />
-          <select
-            value={groupBy ?? ''}
-            onChange={e => setGroupBy(e.target.value || null)}
-            className="select-sm"
-          >
-            {GROUP_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-        </div>
-
-        {/* Density */}
-        <div className="flex items-center gap-1">
-          <AlignJustify size={13} className="text-gray-400" />
-          <select
-            value={density}
-            onChange={e => setDensity(e.target.value as Density)}
-            className="select-sm"
-          >
-            {(Object.keys(DENSITY_LABELS) as Density[]).map(d => (
-              <option key={d} value={d}>{DENSITY_LABELS[d]}</option>
-            ))}
-          </select>
-        </div>
 
         <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
 
@@ -202,14 +220,16 @@ export function TableToolbar() {
           <FilterPanel onClose={() => setPanel(null)} />
         </div>
       )}
-      {panel === 'format' && (
-        <div className="px-3 pb-2">
-          <ConditionalFormat onClose={() => setPanel(null)} />
-        </div>
-      )}
 
       {/* Overlays */}
       {panel === 'columns' && <ColumnManager onClose={() => setPanel(null)} />}
+      {panel === 'format' && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <ConditionalFormat onClose={() => setPanel(null)} />
+          </div>
+        </div>
+      )}
       {showUpload && <UploadModal onClose={() => setShowUpload(false)} />}
       {showCompare && <CompareModal onClose={() => setShowCompare(false)} />}
       {showAddToPortfolio && (
