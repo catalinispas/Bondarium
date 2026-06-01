@@ -205,33 +205,38 @@ const EMPTY_TREE: FilterGroup = { id: 'root', type: 'group', logic: 'AND', child
 interface Props {
   onClose: () => void;
   embedded?: boolean;
+  externalTree?: FilterGroup;
+  onTreeChange?: (tree: FilterGroup) => void;
 }
 
-export function FilterBuilder({ onClose, embedded = false }: Props) {
+export function FilterBuilder({ onClose, embedded = false, externalTree, onTreeChange }: Props) {
   const { filterTree, setFilterTree, saveFilter } = useTableStore(useShallow(s => ({
     filterTree: s.filterTree,
     setFilterTree: s.setFilterTree,
     saveFilter: s.saveFilter,
   })));
 
+  const controlled = externalTree !== undefined && onTreeChange !== undefined;
   const [pending, setPending] = useState<FilterGroup>(filterTree ?? EMPTY_TREE);
+  const tree = controlled ? externalTree : pending;
+  const setTree = controlled ? onTreeChange : setPending;
   const [saving, setSaving] = useState(false);
   const [saveName, setSaveName] = useState('');
 
   const isApplied = filterTree !== null && filterTree.children.length > 0;
-  const hasPending = pending.children.length > 0;
+  const hasPending = tree.children.length > 0;
 
-  const apply = () => setFilterTree(hasPending ? pending : null);
+  const apply = () => setFilterTree(hasPending ? tree : null);
 
   const remove = () => {
-    setPending(EMPTY_TREE);
+    setTree(EMPTY_TREE);
     setFilterTree(null);
   };
 
   const commitSave = () => {
     const name = saveName.trim();
     if (!name || !hasPending) return;
-    saveFilter(name, pending);
+    saveFilter(name, tree);
     setSaveName('');
     setSaving(false);
   };
@@ -256,48 +261,50 @@ export function FilterBuilder({ onClose, embedded = false }: Props) {
       )}
 
       {/* Tree */}
-      <GroupNode group={pending} depth={0} onUpdate={g => setPending(g)} />
+      <GroupNode group={tree} depth={0} onUpdate={g => setTree(g)} />
 
-      {/* Bottom bar */}
-      <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700 flex-wrap">
-        <button onClick={apply} disabled={!hasPending} className="btn btn-primary">
-          <Check size={11} /> Apply
-        </button>
-
-        {isApplied && (
-          <button onClick={remove} className="btn btn-danger">
-            <Trash2 size={11} /> Remove
+      {/* Bottom bar — hidden when parent controls the tree (FiltersPage owns actions) */}
+      {!controlled && (
+        <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700 flex-wrap">
+          <button onClick={apply} disabled={!hasPending} className="btn btn-primary">
+            <Check size={11} /> Apply
           </button>
-        )}
 
-        <div className="ml-auto flex items-center gap-2">
-          {!saving ? (
-            <button onClick={() => setSaving(true)} disabled={!hasPending} className="btn btn-secondary">
-              <Save size={11} /> Save filter…
+          {isApplied && (
+            <button onClick={remove} className="btn btn-danger">
+              <Trash2 size={11} /> Remove
             </button>
-          ) : (
-            <div className="flex items-center gap-1">
-              <input
-                autoFocus
-                className="input-sm w-32"
-                placeholder="Filter name…"
-                value={saveName}
-                onChange={e => setSaveName(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') commitSave();
-                  if (e.key === 'Escape') { setSaving(false); setSaveName(''); }
-                }}
-              />
-              <button onClick={commitSave} disabled={!saveName.trim()} className="btn btn-primary btn-sm">
-                <Check size={10} /> Save
-              </button>
-              <button onClick={() => { setSaving(false); setSaveName(''); }} className="text-gray-400 hover:text-gray-600">
-                <X size={12} />
-              </button>
-            </div>
           )}
+
+          <div className="ml-auto flex items-center gap-2">
+            {!saving ? (
+              <button onClick={() => setSaving(true)} disabled={!hasPending} className="btn btn-secondary">
+                <Save size={11} /> Save filter…
+              </button>
+            ) : (
+              <div className="flex items-center gap-1">
+                <input
+                  autoFocus
+                  className="input-sm w-32"
+                  placeholder="Filter name…"
+                  value={saveName}
+                  onChange={e => setSaveName(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') commitSave();
+                    if (e.key === 'Escape') { setSaving(false); setSaveName(''); }
+                  }}
+                />
+                <button onClick={commitSave} disabled={!saveName.trim()} className="btn btn-primary btn-sm">
+                  <Check size={10} /> Save
+                </button>
+                <button onClick={() => { setSaving(false); setSaveName(''); }} className="text-gray-400 hover:text-gray-600">
+                  <X size={12} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 

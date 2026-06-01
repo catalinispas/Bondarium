@@ -4,6 +4,7 @@ import { TableToolbar } from './components/table/TableToolbar';
 import { PaginationBar } from './components/table/PaginationBar';
 import { DesignSystem } from './pages/DesignSystem';
 import { PortfolioPage } from './pages/PortfolioPage';
+import { FiltersPage } from './pages/FiltersPage';
 import { useTableStore } from './store/tableStore';
 import { useLiveData } from './hooks/useLiveData';
 
@@ -22,7 +23,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: string |
   }
 }
 
-type Tab = 'offerings' | 'portfolio';
+type Tab = 'offerings' | 'portfolio' | 'filters';
 
 function Inner() {
   const darkMode = useTableStore(s => s.darkMode);
@@ -52,7 +53,7 @@ function Inner() {
           <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
             <span className="text-white text-xs font-bold">B</span>
           </div>
-          <h1 className="text-sm font-semibold text-white">Bond Desk</h1>
+          <h1 className="text-sm font-semibold text-white">Bondarium</h1>
         </div>
         <span className="text-slate-400 text-xs">Structured Finance Analytics</span>
 
@@ -78,6 +79,16 @@ function Inner() {
           >
             Portfolio
           </button>
+          <button
+            onClick={() => switchTab('filters')}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors
+              ${activeTab === 'filters'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+              }`}
+          >
+            Filters
+          </button>
         </div>
 
         <div className="ml-auto">
@@ -97,6 +108,10 @@ function Inner() {
       ) : activeTab === 'portfolio' ? (
         <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
           <PortfolioPage />
+        </div>
+      ) : activeTab === 'filters' ? (
+        <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
+          <FiltersPage />
         </div>
       ) : (
         <>
