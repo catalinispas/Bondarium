@@ -2,12 +2,12 @@ import { useEffect, useState, Component, type ReactNode } from 'react';
 import { BondTable, useFilteredCount } from './components/table/BondTable';
 import { TableToolbar } from './components/table/TableToolbar';
 import { PaginationBar } from './components/table/PaginationBar';
+import { ActiveFilterBar } from './components/table/ActiveFilterBar';
 import { DesignSystem } from './pages/DesignSystem';
 import { PortfolioPage } from './pages/PortfolioPage';
 import { FiltersPage } from './pages/FiltersPage';
 import { useTableStore } from './store/tableStore';
 import { useLiveData } from './hooks/useLiveData';
-import { summarizeTree } from './components/table/FilterBuilder';
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
   state = { error: null };
@@ -26,30 +26,6 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: string |
 
 type Tab = 'offerings' | 'portfolio' | 'filters';
 
-function ActiveFilterBar({ onEdit }: { onEdit: () => void }) {
-  const filterTree = useTableStore(s => s.filterTree);
-  const setFilterTree = useTableStore(s => s.setFilterTree);
-  if (!filterTree || filterTree.children.length === 0) return null;
-  return (
-    <div className="flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800 flex-shrink-0">
-      <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 flex-shrink-0">Filter:</span>
-      <button
-        onClick={onEdit}
-        className="text-xs text-blue-600 dark:text-blue-400 flex-1 truncate font-mono text-left hover:underline"
-        title="Click to edit filter"
-      >
-        {summarizeTree(filterTree)}
-      </button>
-      <button
-        onClick={() => setFilterTree(null)}
-        className="text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 flex-shrink-0 ml-1 px-2 py-0.5 rounded hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
-      >
-        Clear Filter
-      </button>
-    </div>
-  );
-}
-
 function Inner() {
   const darkMode = useTableStore(s => s.darkMode);
   const setPortfolioViewMode = useTableStore(s => s.setPortfolioViewMode);
@@ -57,7 +33,6 @@ function Inner() {
   const [showDesignSystem, setShowDesignSystem] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('offerings');
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
-  const [portfolioFilterPanelOpen, setPortfolioFilterPanelOpen] = useState(false);
   useLiveData();
 
   useEffect(() => {
@@ -133,9 +108,8 @@ function Inner() {
           <DesignSystem />
         </div>
       ) : activeTab === 'portfolio' ? (
-        <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <ActiveFilterBar onEdit={() => setPortfolioFilterPanelOpen(true)} />
-          <PortfolioPage forceOpenFilter={portfolioFilterPanelOpen} onForceOpenConsumed={() => setPortfolioFilterPanelOpen(false)} />
+        <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
+          <PortfolioPage />
         </div>
       ) : activeTab === 'filters' ? (
         <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>

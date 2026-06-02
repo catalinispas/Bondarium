@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Pencil, GitMerge, Trash2 } from 'lucide-react';
+import { ActiveFilterBar } from '../components/table/ActiveFilterBar';
 import { useTableStore } from '../store/tableStore';
 import { useShallow } from 'zustand/react/shallow';
 import { BondTable, useFilteredCount } from '../components/table/BondTable';
@@ -172,13 +173,7 @@ function PortfolioActionBar() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export function PortfolioPage({
-  forceOpenFilter = false,
-  onForceOpenConsumed,
-}: {
-  forceOpenFilter?: boolean;
-  onForceOpenConsumed?: () => void;
-} = {}) {
+export function PortfolioPage() {
   const {
     portfolios, activePortfolioId, portfolioViewMode,
     addPortfolio, setActivePortfolio, setPortfolioViewMode, data,
@@ -194,6 +189,7 @@ export function PortfolioPage({
 
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const filteredCount = useFilteredCount();
 
   const selectedId = portfolioViewMode ? activePortfolioId : 'all';
@@ -221,7 +217,7 @@ export function PortfolioPage({
   };
 
   return (
-    <div className="flex flex-1 min-h-0 overflow-hidden">
+    <div className="flex h-full overflow-hidden">
       {/* Left sidebar */}
       <div className="w-56 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col">
         <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200 dark:border-gray-700">
@@ -299,8 +295,9 @@ export function PortfolioPage({
 
       {/* Main table area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
-        <TableToolbar forceOpenFilter={forceOpenFilter} onForceOpenConsumed={onForceOpenConsumed} />
+        <TableToolbar forceOpenFilter={filterPanelOpen} onForceOpenConsumed={() => setFilterPanelOpen(false)} />
         {portfolioViewMode && <PortfolioActionBar />}
+        <ActiveFilterBar onEdit={() => setFilterPanelOpen(true)} />
         <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
           <BondTable />
         </div>
