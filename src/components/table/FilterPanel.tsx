@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Filter, BookOpen, X, Save, Check, Trash2 } from 'lucide-react';
+import { Filter, BookOpen, X, Save, Check, Trash2, Pencil } from 'lucide-react';
 import { useTableStore } from '../../store/tableStore';
 import { useShallow } from 'zustand/react/shallow';
 import { QuickFilterChips } from './QuickFilterChips';
@@ -14,12 +14,13 @@ function Backdrop({ onClose, children }: { onClose: () => void; children: React.
 }
 
 function SavedFiltersModal({ onClose }: { onClose: () => void }) {
-  const { filterTree, setFilterTree, savedFilters, saveFilter, deleteFilter } = useTableStore(useShallow(s => ({
+  const { filterTree, setFilterTree, savedFilters, saveFilter, deleteFilter, setAdvancedFilterOpen } = useTableStore(useShallow(s => ({
     filterTree: s.filterTree,
     setFilterTree: s.setFilterTree,
     savedFilters: s.savedFilters,
     saveFilter: s.saveFilter,
     deleteFilter: s.deleteFilter,
+    setAdvancedFilterOpen: s.setAdvancedFilterOpen,
   })));
 
   const [saving, setSaving] = useState(false);
@@ -53,6 +54,13 @@ function SavedFiltersModal({ onClose }: { onClose: () => void }) {
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">{sf.name}</span>
                   <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => { setFilterTree(sf.tree); setAdvancedFilterOpen(true); onClose(); }}
+                      className="btn btn-secondary btn-sm"
+                      title="Load into editor"
+                    >
+                      <Pencil size={11} /> Edit
+                    </button>
                     <button onClick={() => { setFilterTree(sf.tree); onClose(); }} className="btn btn-primary btn-sm">Apply</button>
                     <button onClick={() => deleteFilter(sf.name)} className="text-gray-400 hover:text-red-500 p-0.5"><Trash2 size={12} /></button>
                   </div>
