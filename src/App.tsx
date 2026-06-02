@@ -57,6 +57,7 @@ function Inner() {
   const [showDesignSystem, setShowDesignSystem] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('offerings');
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [portfolioFilterPanelOpen, setPortfolioFilterPanelOpen] = useState(false);
   useLiveData();
 
   useEffect(() => {
@@ -103,7 +104,7 @@ function Inner() {
                 : 'text-slate-400 hover:text-slate-200'
               }`}
           >
-            Portfolio
+            Portfolios
           </button>
           <button
             onClick={() => switchTab('filters')}
@@ -132,8 +133,9 @@ function Inner() {
           <DesignSystem />
         </div>
       ) : activeTab === 'portfolio' ? (
-        <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
-          <PortfolioPage />
+        <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <ActiveFilterBar onEdit={() => setPortfolioFilterPanelOpen(true)} />
+          <PortfolioPage forceOpenFilter={portfolioFilterPanelOpen} onForceOpenConsumed={() => setPortfolioFilterPanelOpen(false)} />
         </div>
       ) : activeTab === 'filters' ? (
         <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
