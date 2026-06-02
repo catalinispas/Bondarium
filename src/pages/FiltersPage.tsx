@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X, Plus, Check, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { X, Check, Trash2 } from 'lucide-react';
 import { useTableStore } from '../store/tableStore';
 import { useShallow } from 'zustand/react/shallow';
 import { FilterBuilder, summarizeTree } from '../components/table/FilterBuilder';
@@ -18,13 +18,14 @@ export function FiltersPage({ onNavigateToOfferings }: { onNavigateToOfferings?:
     filterTree: s.filterTree,
   })));
 
-  // null = nothing selected, 'new' = creating, string = editing existing by name
-  const [selectedName, setSelectedName] = useState<string | 'new' | null>(null);
+  const [selectedName, setSelectedName] = useState<string | null>(null);
   const [editorName, setEditorName] = useState('');
   const [editorTree, setEditorTree] = useState<FilterGroup>(EMPTY_TREE);
   const [nameError, setNameError] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState('');
 
-  const selectedFilter = selectedName && selectedName !== 'new'
+  const selectedFilter = selectedName
     ? savedFilters.find(f => f.name === selectedName) ?? null
     : null;
 
@@ -41,11 +42,18 @@ export function FiltersPage({ onNavigateToOfferings }: { onNavigateToOfferings?:
     setNameError('');
   };
 
-  const startNew = () => {
-    setSelectedName('new');
-    setEditorName('');
+  const handleCreate = () => {
+    const name = newName.trim();
+    if (!name) return;
+    const isDuplicate = savedFilters.some(f => f.name === name);
+    if (isDuplicate) return;
+    saveFilter(name, freshTree());
+    setSelectedName(name);
+    setEditorName(name);
     setEditorTree(freshTree());
     setNameError('');
+    setCreating(false);
+    setNewName('');
   };
 
   const handleSave = () => {
@@ -53,7 +61,7 @@ export function FiltersPage({ onNavigateToOfferings }: { onNavigateToOfferings?:
     if (!name) { setNameError('Name is required'); return; }
     const isDuplicate = selectedName !== name && savedFilters.some(f => f.name === name);
     if (isDuplicate) { setNameError('A filter with this name already exists'); return; }
-    if (selectedName && selectedName !== 'new' && selectedName !== name) {
+    if (selectedName && selectedName !== name) {
       deleteFilter(selectedName);
     }
     saveFilter(name, editorTree);
@@ -62,7 +70,7 @@ export function FiltersPage({ onNavigateToOfferings }: { onNavigateToOfferings?:
   };
 
   const handleDelete = () => {
-    if (!selectedName || selectedName === 'new') return;
+    if (!selectedName) return;
     deleteFilter(selectedName);
     setSelectedName(null);
   };
@@ -76,10 +84,9 @@ export function FiltersPage({ onNavigateToOfferings }: { onNavigateToOfferings?:
 
   const handleClearApplied = () => setFilterTree(null);
 
-  const isNew = selectedName === 'new';
   const hasChanges = selectedFilter
     ? editorName !== selectedFilter.name || JSON.stringify(editorTree) !== JSON.stringify(selectedFilter.tree)
-    : isNew;
+    : false;
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -87,51 +94,59 @@ export function FiltersPage({ onNavigateToOfferings }: { onNavigateToOfferings?:
       <div className="w-56 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col">
         <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200 dark:border-gray-700">
           <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">Saved Filters</span>
-          <button onClick={startNew} className="btn btn-primary btn-sm">+ New</button>
+          <button onClick={() => setCreating(v => !v)} className="btn btn-primary btn-sm">+ New</button>
         </div>
 
+        {creating && (
+          <div className="px-2 py-2 border-b border-gray-200 dark:border-gray-700 flex gap-1">
+            <input
+              className="input-sm flex-1 min-w-0"
+              placeholder="Filter name…"
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') { setCreating(false); setNewName(''); } }}
+              autoFocus
+            />
+            <button className="btn btn-primary btn-sm" onClick={handleCreate} disabled={!newName.trim()}>Add</button>
+            <button className="btn btn-ghost btn-sm p-1" onClick={() => { setCreating(false); setNewName(''); }}><X size={12} /></button>
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto py-1">
-          {savedFilters.length === 0 && !isNew ? (
+          {savedFilters.length === 0 ? (
             <p className="px-3 py-6 text-[10px] text-gray-400 dark:text-gray-500 text-center leading-relaxed">
               No saved filters yet.<br />Click "+ New" to create one.
             </p>
           ) : (
-            <>
-              {savedFilters.map(sf => {
-                const isSelected = selectedName === sf.name;
-                const isApplied = appliedName === sf.name;
-                return (
-                  <div
-                    key={sf.name}
-                    onClick={() => loadFilter(sf.name)}
-                    className={`flex flex-col px-3 py-2 cursor-pointer transition-colors
-                      ${isSelected
-                        ? 'bg-blue-50 dark:bg-blue-950/50'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-800'
-                      }`}
-                  >
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className={`text-xs truncate flex-1 ${isSelected ? 'text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-700 dark:text-gray-200'}`}>
-                        {sf.name}
-                      </span>
-                      {isApplied && (
-                        <span className="text-[9px] px-1 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium flex-shrink-0">
-                          active
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-gray-400 dark:text-gray-500 truncate mt-0.5">
-                      {summarizeTree(sf.tree)}
+            savedFilters.map(sf => {
+              const isSelected = selectedName === sf.name;
+              const isApplied = appliedName === sf.name;
+              return (
+                <div
+                  key={sf.name}
+                  onClick={() => loadFilter(sf.name)}
+                  className={`flex flex-col px-3 py-2 cursor-pointer transition-colors
+                    ${isSelected
+                      ? 'bg-blue-50 dark:bg-blue-950/50'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className={`text-xs truncate flex-1 ${isSelected ? 'text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-700 dark:text-gray-200'}`}>
+                      {sf.name}
                     </span>
+                    {isApplied && (
+                      <span className="text-[9px] px-1 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium flex-shrink-0">
+                        active
+                      </span>
+                    )}
                   </div>
-                );
-              })}
-              {isNew && (
-                <div className="flex flex-col px-3 py-2 bg-blue-50 dark:bg-blue-950/50">
-                  <span className="text-xs text-blue-700 dark:text-blue-300 font-medium italic">New filter…</span>
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500 truncate mt-0.5">
+                    {summarizeTree(sf.tree)}
+                  </span>
                 </div>
-              )}
-            </>
+              );
+            })
           )}
         </div>
 
@@ -152,7 +167,7 @@ export function FiltersPage({ onNavigateToOfferings }: { onNavigateToOfferings?:
 
       {/* Main editor area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-white dark:bg-gray-950">
-        {selectedName === null ? (
+        {selectedName === null || !savedFilters.find(f => f.name === selectedName) ? (
           <div className="flex-1 flex items-center justify-center">
             <p className="text-sm text-gray-400 dark:text-gray-500 text-center">
               Select a filter from the list<br />or click <strong>+ New</strong> to create one.
@@ -190,7 +205,7 @@ export function FiltersPage({ onNavigateToOfferings }: { onNavigateToOfferings?:
                   onClick={handleSave}
                   disabled={!editorName.trim()}
                 >
-                  <Check size={12} /> {isNew ? 'Create Filter' : hasChanges ? 'Save Changes' : 'Saved'}
+                  <Check size={12} /> {hasChanges ? 'Save Changes' : 'Saved'}
                 </button>
                 <button
                   className="btn btn-secondary"
@@ -200,11 +215,9 @@ export function FiltersPage({ onNavigateToOfferings }: { onNavigateToOfferings?:
                 >
                   Apply to Table
                 </button>
-                {!isNew && (
-                  <button className="btn btn-danger" onClick={handleDelete}>
-                    <Trash2 size={12} /> Delete
-                  </button>
-                )}
+                <button className="btn btn-danger" onClick={handleDelete}>
+                  <Trash2 size={12} /> Delete
+                </button>
                 <button
                   className="btn btn-ghost ml-auto text-gray-500"
                   onClick={() => setSelectedName(null)}

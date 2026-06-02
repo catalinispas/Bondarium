@@ -221,7 +221,7 @@ export function PortfolioPage() {
         <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200 dark:border-gray-700">
           <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">Portfolios</span>
           <button onClick={() => setCreating(v => !v)} className="btn btn-primary btn-sm">
-            + Add New
+            + New
           </button>
         </div>
 
@@ -292,7 +292,7 @@ export function PortfolioPage() {
       </div>
 
       {/* Main table area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         <TableToolbar />
         {portfolioViewMode && <PortfolioActionBar />}
         <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>

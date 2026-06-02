@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Search, Columns, Filter, Palette, Download,
   Upload, Sun, Moon, AlignJustify, Group, GitCompare, X,
@@ -37,7 +37,13 @@ const GROUP_OPTIONS = [
   { value: 'liquidity', label: 'Liquidity' },
 ];
 
-export function TableToolbar() {
+export function TableToolbar({
+  forceOpenFilter = false,
+  onForceOpenConsumed,
+}: {
+  forceOpenFilter?: boolean;
+  onForceOpenConsumed?: () => void;
+} = {}) {
   const {
     globalSearch, setGlobalSearch,
     darkMode, toggleDarkMode,
@@ -71,6 +77,13 @@ export function TableToolbar() {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const togglePanel = (p: Panel) => setPanel(prev => prev === p ? null : p);
+
+  useEffect(() => {
+    if (forceOpenFilter) {
+      setPanel('filter');
+      onForceOpenConsumed?.();
+    }
+  }, [forceOpenFilter]);
 
   const hasFilter = (filterTree && filterTree.children.length > 0) || activePresets.length > 0;
   const selectedIds = Object.keys(selected).filter(k => selected[k]);
@@ -222,10 +235,15 @@ export function TableToolbar() {
       )}
 
       {/* Overlays */}
-      {panel === 'columns' && <ColumnManager onClose={() => setPanel(null)} />}
+      {panel === 'columns' && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setPanel(null)} />
+          <ColumnManager onClose={() => setPanel(null)} />
+        </>
+      )}
       {panel === 'format' && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setPanel(null)}>
+          <div onClick={e => e.stopPropagation()} className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
             <ConditionalFormat onClose={() => setPanel(null)} />
           </div>
         </div>

@@ -1,5 +1,4 @@
 import { useEffect, useState, Component, type ReactNode } from 'react';
-import { X } from 'lucide-react';
 import { BondTable, useFilteredCount } from './components/table/BondTable';
 import { TableToolbar } from './components/table/TableToolbar';
 import { PaginationBar } from './components/table/PaginationBar';
@@ -27,20 +26,25 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: string |
 
 type Tab = 'offerings' | 'portfolio' | 'filters';
 
-function ActiveFilterBar() {
+function ActiveFilterBar({ onEdit }: { onEdit: () => void }) {
   const filterTree = useTableStore(s => s.filterTree);
   const setFilterTree = useTableStore(s => s.setFilterTree);
   if (!filterTree || filterTree.children.length === 0) return null;
   return (
     <div className="flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800 flex-shrink-0">
       <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 flex-shrink-0">Filter:</span>
-      <span className="text-xs text-blue-600 dark:text-blue-400 flex-1 truncate font-mono">{summarizeTree(filterTree)}</span>
+      <button
+        onClick={onEdit}
+        className="text-xs text-blue-600 dark:text-blue-400 flex-1 truncate font-mono text-left hover:underline"
+        title="Click to edit filter"
+      >
+        {summarizeTree(filterTree)}
+      </button>
       <button
         onClick={() => setFilterTree(null)}
-        title="Remove filter"
-        className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 flex-shrink-0 ml-1"
+        className="text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 flex-shrink-0 ml-1 px-2 py-0.5 rounded hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
       >
-        <X size={13} />
+        Clear Filter
       </button>
     </div>
   );
@@ -52,6 +56,7 @@ function Inner() {
   const clearSelected = useTableStore(s => s.clearSelected);
   const [showDesignSystem, setShowDesignSystem] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('offerings');
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   useLiveData();
 
   useEffect(() => {
@@ -136,8 +141,8 @@ function Inner() {
         </div>
       ) : (
         <>
-          <TableToolbar />
-          <ActiveFilterBar />
+          <TableToolbar forceOpenFilter={filterPanelOpen} onForceOpenConsumed={() => setFilterPanelOpen(false)} />
+          <ActiveFilterBar onEdit={() => setFilterPanelOpen(true)} />
           <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
             <BondTable />
           </div>

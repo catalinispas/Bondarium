@@ -120,7 +120,7 @@ export function ColumnManager({ onClose }: Props) {
     : columnOrder;
 
   return (
-    <div className="fixed right-0 top-0 h-full w-72 bg-white dark:bg-gray-900 shadow-xl border-l border-gray-200 dark:border-gray-700 z-50 flex flex-col">
+    <div className="fixed right-0 top-10 h-[calc(100vh-40px)] w-72 bg-white dark:bg-gray-900 shadow-xl border-l border-gray-200 dark:border-gray-700 z-50 flex flex-col">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100">Columns</h3>
         <div className="flex items-center gap-2">
