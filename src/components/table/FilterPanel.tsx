@@ -3,7 +3,7 @@ import { Filter, BookOpen, X, Save, Check, Trash2 } from 'lucide-react';
 import { useTableStore } from '../../store/tableStore';
 import { useShallow } from 'zustand/react/shallow';
 import { QuickFilterChips } from './QuickFilterChips';
-import { FilterBuilder, summarizeTree } from './FilterBuilder';
+import { summarizeTree } from './FilterBuilder';
 
 function Backdrop({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   return (
@@ -90,13 +90,13 @@ interface Props {
 }
 
 export function FilterPanel({ onClose }: Props) {
-  const { filterTree, activePresets, savedFilters } = useTableStore(useShallow(s => ({
+  const { filterTree, activePresets, savedFilters, setAdvancedFilterOpen } = useTableStore(useShallow(s => ({
     filterTree: s.filterTree,
     activePresets: s.activePresets,
     savedFilters: s.savedFilters,
+    setAdvancedFilterOpen: s.setAdvancedFilterOpen,
   })));
 
-  const [showBuilder, setShowBuilder] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
 
   const hasBuilderActive = filterTree !== null && filterTree.children.length > 0;
@@ -106,7 +106,7 @@ export function FilterPanel({ onClose }: Props) {
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 shadow-md p-3 w-full">
         <div className="flex items-center gap-1.5 mb-3">
           <button
-            onClick={() => setShowBuilder(true)}
+            onClick={() => setAdvancedFilterOpen(true)}
             className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border transition-colors
               ${hasBuilderActive
                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-300 dark:border-blue-700'
@@ -136,20 +136,6 @@ export function FilterPanel({ onClose }: Props) {
         </div>
         <QuickFilterChips />
       </div>
-
-      {showBuilder && (
-        <Backdrop onClose={() => setShowBuilder(false)}>
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Advanced Filter</h3>
-              <button onClick={() => setShowBuilder(false)} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
-            </div>
-            <div className="p-4">
-              <FilterBuilder onClose={() => setShowBuilder(false)} embedded />
-            </div>
-          </div>
-        </Backdrop>
-      )}
 
       {showSaved && <SavedFiltersModal onClose={() => setShowSaved(false)} />}
     </>

@@ -189,7 +189,6 @@ export function PortfolioPage() {
 
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
-  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const filteredCount = useFilteredCount();
 
   const selectedId = portfolioViewMode ? activePortfolioId : 'all';
@@ -295,9 +294,9 @@ export function PortfolioPage() {
 
       {/* Main table area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
-        <TableToolbar forceOpenFilter={filterPanelOpen} onForceOpenConsumed={() => setFilterPanelOpen(false)} />
+        <TableToolbar />
         {portfolioViewMode && <PortfolioActionBar />}
-        <ActiveFilterBar onEdit={() => setFilterPanelOpen(true)} />
+        <ActiveFilterBar />
         <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
           <BondTable />
         </div>

@@ -3,6 +3,7 @@ import { BondTable, useFilteredCount } from './components/table/BondTable';
 import { TableToolbar } from './components/table/TableToolbar';
 import { PaginationBar } from './components/table/PaginationBar';
 import { ActiveFilterBar } from './components/table/ActiveFilterBar';
+import { AdvancedFilterModal } from './components/table/FilterBuilder';
 import { DesignSystem } from './pages/DesignSystem';
 import { PortfolioPage } from './pages/PortfolioPage';
 import { FiltersPage } from './pages/FiltersPage';
@@ -32,7 +33,6 @@ function Inner() {
   const clearSelected = useTableStore(s => s.clearSelected);
   const [showDesignSystem, setShowDesignSystem] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('offerings');
-  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   useLiveData();
 
   useEffect(() => {
@@ -117,14 +117,15 @@ function Inner() {
         </div>
       ) : (
         <>
-          <TableToolbar forceOpenFilter={filterPanelOpen} onForceOpenConsumed={() => setFilterPanelOpen(false)} />
-          <ActiveFilterBar onEdit={() => setFilterPanelOpen(true)} />
+          <TableToolbar />
+          <ActiveFilterBar />
           <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
             <BondTable />
           </div>
           <PaginationBar totalRows={filteredCount} />
         </>
       )}
+      <AdvancedFilterModal />
     </div>
   );
 }

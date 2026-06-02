@@ -124,6 +124,10 @@ interface TableState {
   saveFilter: (name: string, tree: FilterGroup) => void;
   deleteFilter: (name: string) => void;
 
+  // UI state (not persisted)
+  advancedFilterOpen: boolean;
+  setAdvancedFilterOpen: (v: boolean) => void;
+
   // Portfolio
   portfolios: Portfolio[];
   activePortfolioId: string | null;
@@ -358,6 +362,9 @@ export const useTableStore = create<TableState>()(
       deleteFilter: name => set(s => ({
         savedFilters: s.savedFilters.filter(f => f.name !== name),
       })),
+
+      advancedFilterOpen: false,
+      setAdvancedFilterOpen: advancedFilterOpen => set({ advancedFilterOpen }),
     }),
     {
       name: 'bond-table-state-v6',

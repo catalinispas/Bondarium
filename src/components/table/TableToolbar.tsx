@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import {
   Search, Columns, Filter, Palette, Download,
   Upload, Sun, Moon, AlignJustify, Group, GitCompare, X,
@@ -37,13 +37,7 @@ const GROUP_OPTIONS = [
   { value: 'liquidity', label: 'Liquidity' },
 ];
 
-export function TableToolbar({
-  forceOpenFilter = false,
-  onForceOpenConsumed,
-}: {
-  forceOpenFilter?: boolean;
-  onForceOpenConsumed?: () => void;
-} = {}) {
+export function TableToolbar() {
   const {
     globalSearch, setGlobalSearch,
     darkMode, toggleDarkMode,
@@ -77,13 +71,6 @@ export function TableToolbar({
   const panelRef = useRef<HTMLDivElement>(null);
 
   const togglePanel = (p: Panel) => setPanel(prev => prev === p ? null : p);
-
-  useEffect(() => {
-    if (forceOpenFilter) {
-      setPanel('filter');
-      onForceOpenConsumed?.();
-    }
-  }, [forceOpenFilter]);
 
   const hasFilter = (filterTree && filterTree.children.length > 0) || activePresets.length > 0;
   const selectedIds = Object.keys(selected).filter(k => selected[k]);
